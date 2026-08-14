@@ -1,0 +1,12 @@
+import { Router } from "express";
+import { auth,adminOnly } from "../middleware/auth.js";
+import SuppressionList from "../models/SuppressionList.js";
+import Unsubscribe from "../models/Unsubscribe.js";
+import { addSuppression,addUnsubscribe } from "../services/compliance.js";
+const r=Router();r.use(auth);
+r.get("/suppression",async(req,res,next)=>{try{res.json(await SuppressionList.find().sort({createdAt:-1}))}catch(e){next(e)}});
+r.post("/suppression",adminOnly,async(req,res,next)=>{try{res.status(201).json(await addSuppression(req.body))}catch(e){next(e)}});
+r.delete("/suppression/:id",adminOnly,async(req,res,next)=>{try{await SuppressionList.findByIdAndDelete(req.params.id);res.json({message:"Removed"})}catch(e){next(e)}});
+r.get("/unsubscribes",async(req,res,next)=>{try{res.json(await Unsubscribe.find().sort({createdAt:-1}))}catch(e){next(e)}});
+r.post("/unsubscribe",async(req,res,next)=>{try{res.status(201).json(await addUnsubscribe(req.body.email,req.body.leadId,req.body.reason))}catch(e){next(e)}});
+export default r;
