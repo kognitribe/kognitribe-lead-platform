@@ -17,7 +17,38 @@ import { notFound,errorHandler } from "./middleware/error.js";
 
 const app=express();
 app.use(helmet());
-app.use(cors({origin:process.env.CLIENT_URL||"http://localhost:5173",credentials:true}));
+const allowedOrigins = [
+    "http://localhost:5173",
+    "http://localhost:5174",
+    "https://kognitribe-lead-platform-1.onrender.com",
+];
+
+app.use(
+    cors({
+        origin: function (origin, callback) {
+            if (!origin) {
+                return callback(null, true);
+            }
+
+            if (allowedOrigins.includes(origin)) {
+                return callback(null, true);
+            }
+
+            console.log(
+                "CORS blocked:",
+                origin
+            );
+
+            return callback(
+                new Error(
+                    `CORS blocked origin: ${origin}`
+                )
+            );
+        },
+
+        credentials: true,
+    })
+);
 app.use(express.json({limit:"1mb"}));
 app.use(cookieParser());
 app.use(rateLimit({windowMs:15*60*1000,max:500,standardHeaders:true,legacyHeaders:false}));
